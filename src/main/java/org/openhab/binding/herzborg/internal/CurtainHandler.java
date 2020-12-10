@@ -12,7 +12,7 @@
  */
 package org.openhab.binding.herzborg.internal;
 
-import static org.openhab.binding.herzborg.internal.HerzborgBindingConstants.CHANNEL_POSITION;
+import static org.openhab.binding.herzborg.internal.HerzborgBindingConstants.*;
 
 import java.io.IOException;
 import java.util.concurrent.ScheduledFuture;
@@ -23,8 +23,10 @@ import javax.xml.bind.DatatypeConverter;
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
 import org.eclipse.smarthome.core.library.types.DecimalType;
+import org.eclipse.smarthome.core.library.types.OnOffType;
 import org.eclipse.smarthome.core.library.types.PercentType;
 import org.eclipse.smarthome.core.library.types.StopMoveType;
+import org.eclipse.smarthome.core.library.types.StringType;
 import org.eclipse.smarthome.core.library.types.UpDownType;
 import org.eclipse.smarthome.core.thing.Bridge;
 import org.eclipse.smarthome.core.thing.ChannelUID;
@@ -61,24 +63,52 @@ public class CurtainHandler extends BaseThingHandler {
 
     @Override
     public void handleCommand(ChannelUID channelUID, Command command) {
-        if (CHANNEL_POSITION.equals(channelUID.getId())) {
-            Packet pkt = null;
+        String ch = channelUID.getId();
+        Packet pkt = null;
 
-            if (command instanceof UpDownType) {
-                pkt = buildPacket(Function.CONTROL,
-                        (command == UpDownType.UP) ? ControlAddress.OPEN : ControlAddress.CLOSE);
-            } else if (command instanceof StopMoveType) {
-                pkt = buildPacket(Function.CONTROL, ControlAddress.STOP);
-            } else if (command instanceof DecimalType) {
-                pkt = buildPacket(Function.CONTROL, ControlAddress.PERCENT, ((DecimalType) command).byteValue());
-            }
+        switch (ch) {
+            case CHANNEL_POSITION:
+                if (command instanceof UpDownType) {
+                    pkt = buildPacket(Function.CONTROL,
+                            (command == UpDownType.UP) ? ControlAddress.OPEN : ControlAddress.CLOSE);
+                } else if (command instanceof StopMoveType) {
+                    pkt = buildPacket(Function.CONTROL, ControlAddress.STOP);
+                } else if (command instanceof DecimalType) {
+                    pkt = buildPacket(Function.CONTROL, ControlAddress.PERCENT, ((DecimalType) command).byteValue());
+                }
+                break;
+            case CHANNEL_REVERSE:
+                if (command instanceof OnOffType) {
+                    pkt = buildPacket(Function.WRITE, DataAddress.DEFAULT_DIR, command.equals(OnOffType.ON) ? 1 : 0);
+                }
+                break;
+            case CHANNEL_HAND_START:
+                if (command instanceof OnOffType) {
+                    pkt = buildPacket(Function.WRITE, DataAddress.HAND_START, command.equals(OnOffType.ON) ? 0 : 1);
+                }
+                break;
+            case CHANNEL_EXT_SWITCH:
+                if (command instanceof StringType) {
+                    pkt = buildPacket(Function.WRITE, DataAddress.EXT_SWITCH, Byte.valueOf(command.toString()));
+                }
+                break;
+            case CHANNEL_HV_SWITCH:
+                if (command instanceof StringType) {
+                    pkt = buildPacket(Function.WRITE, DataAddress.EXT_HV_SWITCH, Byte.valueOf(command.toString()));
+                }
+                break;
+        }
 
-            if (pkt != null) {
-                final Packet p = pkt;
-                scheduler.schedule(() -> {
-                    doPacket(p);
-                }, 0, TimeUnit.MILLISECONDS);
-            }
+        if (pkt != null) {
+            final Packet p = pkt;
+            scheduler.schedule(() -> {
+                Packet reply = doPacket(p);
+
+                if (reply != null) {
+                    logger.trace("Function {} addr {} reply {}", p.getFunction(), p.getDataAddress(),
+                            DatatypeConverter.printHexBinary(reply.getBuffer()));
+                }
+            }, 0, TimeUnit.MILLISECONDS);
         }
     }
 
@@ -88,6 +118,10 @@ public class CurtainHandler extends BaseThingHandler {
 
     private Packet buildPacket(byte function, byte data_addr, byte value) {
         return new Packet((short) config.address, function, data_addr, value);
+    }
+
+    private Packet buildPacket(byte function, byte data_addr, int value) {
+        return buildPacket(function, data_addr, (byte) value);
     }
 
     @Override
@@ -160,11 +194,35 @@ public class CurtainHandler extends BaseThingHandler {
     }
 
     private void poll() {
-        Packet pkt = new Packet((short) config.address, Function.READ, DataAddress.POSITION, (byte) 1);
-        Packet reply = doPacket(pkt);
+        Packet reply = doPacket(buildPacket(Function.READ, DataAddress.POSITION, 4));
 
         if (reply != null) {
-            updateState(CHANNEL_POSITION, new PercentType(reply.getData()));
+            byte position = reply.getData(0);
+            byte reverse = reply.getData(1);
+            byte hand_start = reply.getData(2);
+            byte mode = reply.getData(3);
+
+            if (position > 100 || position < 0) {
+                // If calibration has been lost, position is reported as -1.
+                // Unfortinately DecimalType seems not to allow NaN, so we have to
+                // fall back to some valid value, we choose 0
+                position = 0;
+            }
+
+            updateState(CHANNEL_POSITION, new PercentType(position));
+            updateState(CHANNEL_REVERSE, reverse != 0 ? OnOffType.ON : OnOffType.OFF);
+            updateState(CHANNEL_HAND_START, hand_start == 0 ? OnOffType.ON : OnOffType.OFF);
+            updateState(CHANNEL_MODE, new StringType(String.valueOf(mode)));
+        }
+
+        Packet ext_reply = doPacket(buildPacket(Function.READ, DataAddress.EXT_SWITCH, 2));
+
+        if (ext_reply != null) {
+            byte ext_switch = ext_reply.getData(0);
+            byte hv_switch = ext_reply.getData(1);
+
+            updateState(CHANNEL_EXT_SWITCH, new StringType(String.valueOf(ext_switch)));
+            updateState(CHANNEL_HV_SWITCH, new StringType(String.valueOf(hv_switch)));
         }
     }
 }

@@ -73,7 +73,13 @@ public class HerzborgProtocol {
         }
 
         public Packet(short device_addr, byte function, byte data_addr, byte value) {
-            setHeader(device_addr, function, data_addr, 1);
+            int data_length = (function == Function.WRITE) ? 2 : 1;
+
+            setHeader(device_addr, function, data_addr, data_length);
+            if (function == Function.WRITE) {
+                // WRITE command also requires length of data to be written
+                m_Buffer.put((byte) 1);
+            }
             m_Buffer.put(value);
             setCrc16();
         }
@@ -98,8 +104,8 @@ public class HerzborgProtocol {
             return m_Buffer.get(HEADER_LENGTH);
         }
 
-        public byte getData() {
-            return m_Buffer.get(HEADER_LENGTH);
+        public byte getData(int offset) {
+            return m_Buffer.get(HEADER_LENGTH + offset);
         }
 
         // Herzborg uses modbus variant of CRC16

@@ -32,4 +32,9 @@ public class HerzborgBindingConstants {
 
     // List of all Channel ids
     public static final String CHANNEL_POSITION = "position";
+    public static final String CHANNEL_MODE = "mode";
+    public static final String CHANNEL_REVERSE = "reverse";
+    public static final String CHANNEL_HAND_START = "hand_start";
+    public static final String CHANNEL_EXT_SWITCH = "ext_switch";
+    public static final String CHANNEL_HV_SWITCH = "hv_switch";
 }

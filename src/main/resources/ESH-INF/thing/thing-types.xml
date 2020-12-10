@@ -24,7 +24,13 @@
 		<description>Curtain motor</description>
 		<channels>
 			<channel id="position" typeId="position" />
+			<channel id="mode" typeId="mode" />
+			<channel id="reverse" typeId="reverse" />
+			<channel id="hand_start" typeId="hand_start" />
+			<channel id="ext_switch" typeId="ext_switch" />
+			<channel id="hv_switch" typeId="hv_switch" />
 		</channels>
+		
         <config-description>
             <parameter name="address" type="integer">
                 <label>Address</label>
@@ -45,5 +51,52 @@
 		<description>Curtain position control</description>
 		<category>Blinds</category>
 	</channel-type>
-
+    <channel-type id="mode">
+        <item-type>String</item-type>
+        <label>Mode</label>
+        <description>Motor mode</description>
+        <state readOnly="true">
+            <options>
+                <option value="0">Stop</option>
+                <option value="1">Open</option>
+                <option value="2">Close</option>
+                <option value="3">Setting</option>
+            </options>
+        </state>
+    </channel-type>
+    <channel-type id="reverse" advanced="true">
+        <item-type>Switch</item-type>
+        <label>Reverse motor</label>
+        <description>Reverse default motor direction</description>
+    </channel-type>
+    <channel-type id="hand_start" advanced="true">
+        <item-type>Switch</item-type>
+        <label>Start by hand</label>
+        <description>Enable or disable start by hand</description>
+    </channel-type>
+    <channel-type id="ext_switch" advanced="true">
+        <item-type>String</item-type>
+        <label>External switch</label>
+        <description>External switch type</description>
+        <state>
+            <options>
+                <option value="1">2-channel biased</option>
+                <option value="2">2-channel rocker</option>
+                <option value="3">DC246</option>
+                <option value="4">single button</option>
+            </options>
+        </state>
+    </channel-type>
+    <channel-type id="hv_switch" advanced="true">
+        <item-type>String</item-type>
+        <label>HV switch</label>
+        <description>High-voltage switch type (only for EV motor)</description>
+        <state>
+            <options>
+                <option value="0">2-channel biased</option>
+                <option value="1">hotel mode</option>
+                <option value="2">2-channel rocker</option>
+            </options>
+        </state>
+    </channel-type>
 </thing:thing-descriptions>
