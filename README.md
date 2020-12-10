@@ -1,56 +1,58 @@
 # Herzborg Binding
 
-_Give some details about what this binding is meant for - a protocol, system, specific device._
-
-_If possible, provide some resources like pictures, a YouTube video, etc. to give an impression of what can be done with this binding. You can place such resources into a `doc` folder next to this README.md._
+This binding supports smart curtain motors by Herzborg (http://www.herzborg.de/product.aspx#motor)
 
 ## Supported Things
 
-_Please describe the different supported things / devices within this section._
-_Which different types are supported, which models were tested etc.?_
-_Note that it is planned to generate some part of this based on the XML files within ```src/main/resources/ESH-INF/thing``` of your binding._
+- RS485 Serial bus
+- Curtain motor.
+
+The binding was developed and tested using DT300TV-1.2/14 type motor; others are expected to be compatible
 
 ## Discovery
 
-_Describe the available auto-discovery features here. Mention for what it works and what needs to be kept in mind when using it._
-
-## Binding Configuration
-
-_If your binding requires or supports general configuration settings, please create a folder ```cfg``` and place the configuration file ```<bindingId>.cfg``` inside it. In this section, you should link to this file and provide some information about the options. The file could e.g. look like:_
-
-```
-# Configuration for the Philips Hue Binding
-#
-# Default secret key for the pairing of the Philips Hue Bridge.
-# It has to be between 10-40 (alphanumeric) characters
-# This may be changed by the user for security reasons.
-secret=openHABSecret
-```
-
-_Note that it is planned to generate some part of this based on the information that is available within ```src/main/resources/ESH-INF/binding``` of your binding._
-
-_If your binding does not offer any generic configurations, you can remove this section completely._
+Due to nature of serial bus being used, no automatic discovery is possible.
 
 ## Thing Configuration
 
-_Describe what is needed to manually configure a thing, either through the (Paper) UI or via a thing-file. This should be mainly about its mandatory and optional configuration parameters. A short example entry for a thing file can help!_
+### Serial Bus Bridge (id "serial_bus")
 
-_Note that it is planned to generate some part of this based on the XML files within ```src/main/resources/ESH-INF/thing``` of your binding._
+| Parameter | Meaning                                                 |
+|-----------|---------------------------------------------------------|
+| port      | Serial port name to use                                 |
+
+Herzborg devices appear to use fixed 9600 8n1 communication parameters, so no other parameters are needed
+
+### Curtain Motor Thing (id "curtain")
+
+| Parameter     | Meaning                                                 |
+|---------------|---------------------------------------------------------|
+| address       | Address of the motor on the serial bus.                 |
+| poll_interval | Polling interval in seconds                             |
 
 ## Channels
 
-_Here you should provide information about available channel types, what their meaning is and how they can be used._
+| channel     | type          | description                                   |
+|-------------|---------------|-----------------------------------------------|
+| position    | RollerShutter | Controls position of the curtain. Position reported back is in percents; 0 - fully closed; 100 - fully open |
 
-_Note that it is planned to generate some part of this based on the XML files within ```src/main/resources/ESH-INF/thing``` of your binding._
+heraborg.things:
 
-| channel  | type   | description                  |
-|----------|--------|------------------------------|
-| control  | Switch | This is the control channel  |
+```
+Bridge herzborg:serial_bus:my_herzborg_bus [ port="/dev/ttyAMA1" ]
+{
+    Thing herzborg:curtain:livingroom [ address=1234, poll_interval=1 ]
+}
+```
 
-## Full Example
+herzborg.items:
 
-_Provide a full usage example based on textual configuration files (*.things, *.items, *.sitemap)._
+```
+Rollershutter LivingRoom_Window {channel="herzborg:curtain:livingroom:position"}
+```
 
-## Any custom content here!
+herzborg.sitemap:
 
-_Feel free to add additional sections for whatever you think should also be mentioned about your binding!_
+```
+TODO
+```
