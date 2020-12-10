@@ -166,8 +166,22 @@ public class SerialBusHandler extends BaseBridgeHandler implements SerialPortEve
 
         int read_length = Packet.MIN_LENGTH;
 
-        if (pkt.getFunction() == Function.READ) {
-            read_length += pkt.getDataLength();
+        switch (pkt.getFunction()) {
+            case Function.READ:
+                // The reply will include data itself
+                read_length += pkt.getDataLength();
+                break;
+            case Function.WRITE:
+                // The reply is number of bytes written
+                read_length += 1;
+                break;
+            case Function.CONTROL:
+                // The whole packet will be echoed back
+                read_length = pkt.getBuffer().length;
+                break;
+            default:
+                // We must not have anything else here
+                throw new IllegalStateException("Unknown function code");
         }
 
         dataOut.write(pkt.getBuffer());
@@ -189,5 +203,16 @@ public class SerialBusHandler extends BaseBridgeHandler implements SerialPortEve
         }
 
         return new Packet(in_buffer);
+    }
+
+    public void Flush() throws IOException {
+        InputStream dataIn = this.dataIn;
+
+        if (dataIn != null) {
+            // Unfortunately Java streams can't be flushed. Just read and drop all the characters
+            while (dataIn.available() > 0) {
+                dataIn.read();
+            }
+        }
     }
 }

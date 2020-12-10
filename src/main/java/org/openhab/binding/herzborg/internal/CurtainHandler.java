@@ -23,6 +23,9 @@ import javax.xml.bind.DatatypeConverter;
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
 import org.eclipse.smarthome.core.library.types.DecimalType;
+import org.eclipse.smarthome.core.library.types.PercentType;
+import org.eclipse.smarthome.core.library.types.StopMoveType;
+import org.eclipse.smarthome.core.library.types.UpDownType;
 import org.eclipse.smarthome.core.thing.Bridge;
 import org.eclipse.smarthome.core.thing.ChannelUID;
 import org.eclipse.smarthome.core.thing.Thing;
@@ -31,7 +34,7 @@ import org.eclipse.smarthome.core.thing.ThingStatusDetail;
 import org.eclipse.smarthome.core.thing.binding.BaseThingHandler;
 import org.eclipse.smarthome.core.thing.binding.BridgeHandler;
 import org.eclipse.smarthome.core.types.Command;
-import org.eclipse.smarthome.core.types.RefreshType;
+import org.openhab.binding.herzborg.internal.dto.HerzborgProtocol.ControlAddress;
 import org.openhab.binding.herzborg.internal.dto.HerzborgProtocol.DataAddress;
 import org.openhab.binding.herzborg.internal.dto.HerzborgProtocol.Function;
 import org.openhab.binding.herzborg.internal.dto.HerzborgProtocol.Packet;
@@ -59,17 +62,32 @@ public class CurtainHandler extends BaseThingHandler {
     @Override
     public void handleCommand(ChannelUID channelUID, Command command) {
         if (CHANNEL_POSITION.equals(channelUID.getId())) {
-            if (command instanceof RefreshType) {
-                // TODO: handle data refresh
+            Packet pkt = null;
+
+            if (command instanceof UpDownType) {
+                pkt = buildPacket(Function.CONTROL,
+                        (command == UpDownType.UP) ? ControlAddress.OPEN : ControlAddress.CLOSE);
+            } else if (command instanceof StopMoveType) {
+                pkt = buildPacket(Function.CONTROL, ControlAddress.STOP);
+            } else if (command instanceof DecimalType) {
+                pkt = buildPacket(Function.CONTROL, ControlAddress.PERCENT, ((DecimalType) command).byteValue());
             }
 
-            // TODO: handle command
-
-            // Note: if communication with thing fails for some reason,
-            // indicate that by setting the status with detail information:
-            // updateStatus(ThingStatus.OFFLINE, ThingStatusDetail.COMMUNICATION_ERROR,
-            // "Could not control device at IP address x.x.x.x");
+            if (pkt != null) {
+                final Packet p = pkt;
+                scheduler.schedule(() -> {
+                    doPacket(p);
+                }, 0, TimeUnit.MILLISECONDS);
+            }
         }
+    }
+
+    private Packet buildPacket(byte function, byte data_addr) {
+        return new Packet((short) config.address, function, data_addr);
+    }
+
+    private Packet buildPacket(byte function, byte data_addr, byte value) {
+        return new Packet((short) config.address, function, data_addr, value);
     }
 
     @Override
@@ -108,46 +126,45 @@ public class CurtainHandler extends BaseThingHandler {
         }
     }
 
-    private synchronized void poll() {
+    private @Nullable synchronized Packet doPacket(Packet pkt) {
         SerialBusHandler bus = this.bus;
 
         if (bus == null) {
             // This is an impossible situation but Eclipse forces us to handle it
-            logger.warn("No Bridge while polling");
-            stopPoll();
-            return;
+            logger.warn("No Bridge sending commands");
+            return null;
         }
 
         try {
-            boolean ok = true;
-
-            Packet pkt = new Packet((short) config.address, Function.READ, DataAddress.POSITION);
             Packet reply = bus.doPacket(pkt);
 
             if (reply == null) {
                 updateStatus(ThingStatus.OFFLINE, ThingStatusDetail.BRIDGE_OFFLINE);
-                return;
+                return null;
             }
 
-            ok = reply.isValid();
-
-            if (ok) {
-                updateState(CHANNEL_POSITION, new DecimalType(reply.getData()));
+            if (reply.isValid()) {
+                updateStatus(ThingStatus.ONLINE);
+                return reply;
             } else {
                 logger.warn("Invalid reply received: {}", DatatypeConverter.printHexBinary(reply.getBuffer()));
-            }
-
-            if (ok) {
-                updateStatus(ThingStatus.ONLINE);
-            } else {
                 updateStatus(ThingStatus.OFFLINE, ThingStatusDetail.COMMUNICATION_ERROR, "Invalid response received");
+                bus.Flush();
             }
-        } catch (
 
-        IOException e) {
+        } catch (IOException e) {
             updateStatus(ThingStatus.OFFLINE, ThingStatusDetail.COMMUNICATION_ERROR, e.getMessage());
         }
 
+        return null;
     }
 
+    private void poll() {
+        Packet pkt = new Packet((short) config.address, Function.READ, DataAddress.POSITION, (byte) 1);
+        Packet reply = doPacket(pkt);
+
+        if (reply != null) {
+            updateState(CHANNEL_POSITION, new PercentType(reply.getData()));
+        }
+    }
 }

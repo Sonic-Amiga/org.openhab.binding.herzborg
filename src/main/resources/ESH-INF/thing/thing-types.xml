@@ -40,9 +40,10 @@
 	</thing-type>
 
 	<channel-type id="position">
-		<item-type>Number</item-type>
-		<label>Position in percent</label>
-		<description>Position of the curtain (0 - 100%)</description>
+		<item-type>Rollershutter</item-type>
+		<label>Position</label>
+		<description>Curtain position control</description>
+		<category>Blinds</category>
 	</channel-type>
 
 </thing:thing-descriptions>

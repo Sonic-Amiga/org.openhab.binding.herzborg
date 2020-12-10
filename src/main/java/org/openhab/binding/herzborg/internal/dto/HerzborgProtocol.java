@@ -51,12 +51,8 @@ public class HerzborgProtocol {
             m_DataLength = data.length - CRC16_LENGTH;
         }
 
-        public Packet(short device_addr, byte function, byte data_addr) {
-            m_DataLength = HEADER_LENGTH;
-
-            if (function == Function.READ) {
-                m_DataLength++;
-            }
+        private void setHeader(short device_addr, byte function, byte data_addr, int data_length) {
+            m_DataLength = HEADER_LENGTH + data_length;
 
             m_Buffer = ByteBuffer.allocate(m_DataLength + CRC16_LENGTH);
             m_Buffer.order(ByteOrder.LITTLE_ENDIAN);
@@ -65,12 +61,21 @@ public class HerzborgProtocol {
             m_Buffer.putShort(device_addr);
             m_Buffer.put(function);
             m_Buffer.put(data_addr);
+        }
 
-            if (function == Function.READ) {
-                m_Buffer.put((byte) 1);
-            }
-
+        private void setCrc16() {
             m_Buffer.putShort(crc16(m_DataLength));
+        }
+
+        public Packet(short device_addr, byte function, byte data_addr) {
+            setHeader(device_addr, function, data_addr, 0);
+            setCrc16();
+        }
+
+        public Packet(short device_addr, byte function, byte data_addr, byte value) {
+            setHeader(device_addr, function, data_addr, 1);
+            m_Buffer.put(value);
+            setCrc16();
         }
 
         public byte[] getBuffer() {
