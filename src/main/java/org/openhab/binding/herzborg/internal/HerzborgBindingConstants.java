@@ -27,8 +27,9 @@ public class HerzborgBindingConstants {
     private static final String BINDING_ID = "herzborg";
 
     // List of all Thing Type UIDs
-    public static final ThingTypeUID THING_TYPE_SAMPLE = new ThingTypeUID(BINDING_ID, "sample");
+    public static final ThingTypeUID THING_TYPE_SERIAL_BUS = new ThingTypeUID(BINDING_ID, "serial_bus");
+    public static final ThingTypeUID THING_TYPE_CURTAIN = new ThingTypeUID(BINDING_ID, "curtain");
 
     // List of all Channel ids
-    public static final String CHANNEL_1 = "channel1";
+    public static final String CHANNEL_POSITION = "position";
 }

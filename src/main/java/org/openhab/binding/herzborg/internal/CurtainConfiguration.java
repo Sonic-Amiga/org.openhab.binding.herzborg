@@ -13,14 +13,11 @@
 package org.openhab.binding.herzborg.internal;
 
 /**
- * The {@link HerzborgConfiguration} class contains fields mapping thing configuration parameters.
+ * The {@link CurtainConfiguration} class contains fields mapping thing configuration parameters.
  *
  * @author Pavel Fedin - Initial contribution
  */
-public class HerzborgConfiguration {
-
-    /**
-     * Sample configuration parameter. Replace with your own.
-     */
-    public String config1;
+public class CurtainConfiguration {
+    public int address;
+    public int poll_interval;
 }

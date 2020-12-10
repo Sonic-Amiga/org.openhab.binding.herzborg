@@ -3,30 +3,46 @@
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xmlns:thing="https://openhab.org/schemas/thing-description/v1.0.0"
 	xsi:schemaLocation="https://openhab.org/schemas/thing-description/v1.0.0 https://openhab.org/schemas/thing-description-1.0.0.xsd">
+    <bridge-type id="serial_bus">
+        <label>Herzborg serial bus</label>
+        <description>RS485 bus</description>
+        <config-description>
+            <parameter name="port" type="text" required="true">
+                <label>Serial Port</label>
+                <context>serial-port</context>
+                <description>Serial port to use, for example /dev/ttyS0 or COM1</description>
+                <default>/dev/ttyS0</default>
+            </parameter>
+        </config-description>
+    </bridge-type>
 
-	<!-- Sample Thing Type -->
-	<thing-type id="sample">
-		<label>Herzborg Binding Thing</label>
-		<description>Sample thing for Herzborg Binding</description>
-
+	<thing-type id="curtain">
+	    <supported-bridge-type-refs>
+            <bridge-type-ref id="serial_bus" />
+        </supported-bridge-type-refs>
+		<label>Herzborg curtain motor</label>
+		<description>Curtain motor</description>
 		<channels>
-			<channel id="channel1" typeId="sample-channel" />
+			<channel id="position" typeId="position" />
 		</channels>
-
-		<config-description>
-			<parameter name="config1" type="text" required="true">
-				<label>Sample Parameter</label>
-				<description>This is a sample text configuration parameter</description>
-			</parameter>
-		</config-description>
-
+        <config-description>
+            <parameter name="address" type="integer">
+                <label>Address</label>
+                <description>Device address on the bus.</description>
+                <default>65278</default>
+            </parameter>
+            <parameter name="poll_interval" type="integer">
+                <label>Poll interval</label>
+                <description>Poll interval in seconds</description>
+                <default>1</default>
+            </parameter>
+        </config-description>
 	</thing-type>
 
-	<!-- Sample Channel Type -->
-	<channel-type id="sample-channel">
-		<item-type>herzborgItem</item-type>
-		<label>Herzborg Binding Channel</label>
-		<description>Sample channel for Herzborg Binding</description>
+	<channel-type id="position">
+		<item-type>Number</item-type>
+		<label>Position in percent</label>
+		<description>Position of the curtain (0 - 100%)</description>
 	</channel-type>
 
 </thing:thing-descriptions>
