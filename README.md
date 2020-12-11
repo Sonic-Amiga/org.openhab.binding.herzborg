@@ -52,6 +52,7 @@ Herzborg devices appear to use fixed 9600 8n1 communication parameters, so no ot
 |             |               | 1 - hotel mode（power on while card in）        |
 |             |               | 2 - dual channel rocker switch                |
 
+## Example
 
 herzborg.things:
 
@@ -71,5 +72,10 @@ Rollershutter LivingRoom_Window {channel="herzborg:curtain:livingroom:position"}
 herzborg.sitemap:
 
 ```
-TODO
+Frame label="Living room curtain"
+{
+    Switch item=LivingRoom_Window label="Control" mappings=["DOWN"="Close", "STOP"="Stop", "UP"="Open"]
+    Slider item=LivingRoom_Window label="Position [%d %%]" minValue=0 maxValue=100
+}
+
 ```
