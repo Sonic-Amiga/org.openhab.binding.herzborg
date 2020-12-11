@@ -17,6 +17,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 
+import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
 import org.eclipse.smarthome.core.thing.Bridge;
 import org.eclipse.smarthome.core.thing.ChannelUID;
@@ -27,6 +28,12 @@ import org.openhab.binding.herzborg.internal.dto.HerzborgProtocol.Packet;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * The {@link BusHandler} is a handy base class, implementing data communication with Herzborg devices.
+ *
+ * @author Pavel Fedin - Initial contribution
+ */
+@NonNullByDefault
 public abstract class BusHandler extends BaseBridgeHandler {
     private final Logger logger = LoggerFactory.getLogger(BusHandler.class);
 
@@ -69,20 +76,20 @@ public abstract class BusHandler extends BaseBridgeHandler {
             return null;
         }
 
-        int read_length = Packet.MIN_LENGTH;
+        int readLength = Packet.MIN_LENGTH;
 
         switch (pkt.getFunction()) {
             case Function.READ:
                 // The reply will include data itself
-                read_length += pkt.getDataLength();
+                readLength += pkt.getDataLength();
                 break;
             case Function.WRITE:
                 // The reply is number of bytes written
-                read_length += 1;
+                readLength += 1;
                 break;
             case Function.CONTROL:
                 // The whole packet will be echoed back
-                read_length = pkt.getBuffer().length;
+                readLength = pkt.getBuffer().length;
                 break;
             default:
                 // We must not have anything else here
@@ -91,11 +98,11 @@ public abstract class BusHandler extends BaseBridgeHandler {
 
         dataOut.write(pkt.getBuffer());
 
-        int read_offset = 0;
-        byte[] in_buffer = new byte[read_length];
+        int readOffset = 0;
+        byte[] replyBuffer = new byte[readLength];
 
-        while (read_length > 0) {
-            int n = dataIn.read(in_buffer, read_offset, read_length);
+        while (readLength > 0) {
+            int n = dataIn.read(replyBuffer, readOffset, readLength);
 
             if (n < 0) {
                 throw new IOException("EOF from serial port");
@@ -103,14 +110,14 @@ public abstract class BusHandler extends BaseBridgeHandler {
                 throw new IOException("Serial read timeout");
             }
 
-            read_offset += n;
-            read_length -= n;
+            readOffset += n;
+            readLength -= n;
         }
 
-        return new Packet(in_buffer);
+        return new Packet(replyBuffer);
     }
 
-    public void Flush() throws IOException {
+    public void flush() throws IOException {
         InputStream dataIn = this.dataIn;
 
         if (dataIn != null) {

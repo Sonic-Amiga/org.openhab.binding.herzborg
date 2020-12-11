@@ -1,10 +1,27 @@
+/**
+ * Copyright (c) 2010-2020 Contributors to the openHAB project
+ *
+ * See the NOTICE file(s) distributed with this work for additional
+ * information.
+ *
+ * This program and the accompanying materials are made available under the
+ * terms of the Eclipse Public License 2.0 which is available at
+ * http://www.eclipse.org/legal/epl-2.0
+ *
+ * SPDX-License-Identifier: EPL-2.0
+ */
 package org.openhab.binding.herzborg.internal.dto;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 
+/**
+ * Herzborg binary protocol
+ *
+ * @author Pavel Fedin - Initial contribution
+ *
+ */
 public class HerzborgProtocol {
-
     public static class Function {
         public static final byte READ = 0x01;
         public static final byte WRITE = 0x02;
@@ -42,29 +59,29 @@ public class HerzborgProtocol {
 
         private static final byte START = 0x55;
 
-        private ByteBuffer m_Buffer;
-        private int m_DataLength;
+        private ByteBuffer dataBuffer;
+        private int dataLength; // Packet length without CRC16
 
         public Packet(byte[] data) {
-            m_Buffer = ByteBuffer.wrap(data);
-            m_Buffer.order(ByteOrder.LITTLE_ENDIAN);
-            m_DataLength = data.length - CRC16_LENGTH;
+            dataBuffer = ByteBuffer.wrap(data);
+            dataBuffer.order(ByteOrder.LITTLE_ENDIAN);
+            dataLength = data.length - CRC16_LENGTH;
         }
 
         private void setHeader(short device_addr, byte function, byte data_addr, int data_length) {
-            m_DataLength = HEADER_LENGTH + data_length;
+            dataLength = HEADER_LENGTH + data_length;
 
-            m_Buffer = ByteBuffer.allocate(m_DataLength + CRC16_LENGTH);
-            m_Buffer.order(ByteOrder.LITTLE_ENDIAN);
+            dataBuffer = ByteBuffer.allocate(dataLength + CRC16_LENGTH);
+            dataBuffer.order(ByteOrder.LITTLE_ENDIAN);
 
-            m_Buffer.put(START);
-            m_Buffer.putShort(device_addr);
-            m_Buffer.put(function);
-            m_Buffer.put(data_addr);
+            dataBuffer.put(START);
+            dataBuffer.putShort(device_addr);
+            dataBuffer.put(function);
+            dataBuffer.put(data_addr);
         }
 
         private void setCrc16() {
-            m_Buffer.putShort(crc16(m_DataLength));
+            dataBuffer.putShort(crc16(dataLength));
         }
 
         public Packet(short device_addr, byte function, byte data_addr) {
@@ -73,39 +90,39 @@ public class HerzborgProtocol {
         }
 
         public Packet(short device_addr, byte function, byte data_addr, byte value) {
-            int data_length = (function == Function.WRITE) ? 2 : 1;
+            int dataLength = (function == Function.WRITE) ? 2 : 1;
 
-            setHeader(device_addr, function, data_addr, data_length);
+            setHeader(device_addr, function, data_addr, dataLength);
             if (function == Function.WRITE) {
                 // WRITE command also requires length of data to be written
-                m_Buffer.put((byte) 1);
+                dataBuffer.put((byte) 1);
             }
-            m_Buffer.put(value);
+            dataBuffer.put(value);
             setCrc16();
         }
 
         public byte[] getBuffer() {
-            return m_Buffer.array();
+            return dataBuffer.array();
         }
 
         public boolean isValid() {
-            return m_Buffer.get(0) == START && crc16(m_DataLength) == m_Buffer.getShort(m_DataLength);
+            return dataBuffer.get(0) == START && crc16(dataLength) == dataBuffer.getShort(dataLength);
         }
 
         public byte getFunction() {
-            return m_Buffer.get(3);
+            return dataBuffer.get(3);
         }
 
         public byte getDataAddress() {
-            return m_Buffer.get(4);
+            return dataBuffer.get(4);
         }
 
         public byte getDataLength() {
-            return m_Buffer.get(HEADER_LENGTH);
+            return dataBuffer.get(HEADER_LENGTH);
         }
 
         public byte getData(int offset) {
-            return m_Buffer.get(HEADER_LENGTH + offset);
+            return dataBuffer.get(HEADER_LENGTH + offset);
         }
 
         // Herzborg uses modbus variant of CRC16
@@ -113,7 +130,7 @@ public class HerzborgProtocol {
         private short crc16(int length) {
             int crc = 0xFFFF;
             for (int i = 0; i < length; i++) {
-                crc = crc ^ Byte.toUnsignedInt(m_Buffer.get(i));
+                crc = crc ^ Byte.toUnsignedInt(dataBuffer.get(i));
                 for (int j = 0; j < 8; j++) {
                     int mask = ((crc & 0x1) != 0) ? 0xA001 : 0x0000;
                     crc = ((crc >> 1) & 0x7FFF) ^ mask;

@@ -183,7 +183,7 @@ public class CurtainHandler extends BaseThingHandler {
             } else {
                 logger.warn("Invalid reply received: {}", DatatypeConverter.printHexBinary(reply.getBuffer()));
                 updateStatus(ThingStatus.OFFLINE, ThingStatusDetail.COMMUNICATION_ERROR, "Invalid response received");
-                bus.Flush();
+                bus.flush();
             }
 
         } catch (IOException e) {
@@ -199,7 +199,7 @@ public class CurtainHandler extends BaseThingHandler {
         if (reply != null) {
             byte position = reply.getData(0);
             byte reverse = reply.getData(1);
-            byte hand_start = reply.getData(2);
+            byte handStart = reply.getData(2);
             byte mode = reply.getData(3);
 
             if (position > 100 || position < 0) {
@@ -211,18 +211,18 @@ public class CurtainHandler extends BaseThingHandler {
 
             updateState(CHANNEL_POSITION, new PercentType(position));
             updateState(CHANNEL_REVERSE, reverse != 0 ? OnOffType.ON : OnOffType.OFF);
-            updateState(CHANNEL_HAND_START, hand_start == 0 ? OnOffType.ON : OnOffType.OFF);
+            updateState(CHANNEL_HAND_START, handStart == 0 ? OnOffType.ON : OnOffType.OFF);
             updateState(CHANNEL_MODE, new StringType(String.valueOf(mode)));
         }
 
-        Packet ext_reply = doPacket(buildPacket(Function.READ, DataAddress.EXT_SWITCH, 2));
+        Packet extReply = doPacket(buildPacket(Function.READ, DataAddress.EXT_SWITCH, 2));
 
-        if (ext_reply != null) {
-            byte ext_switch = ext_reply.getData(0);
-            byte hv_switch = ext_reply.getData(1);
+        if (extReply != null) {
+            byte extSwitch = extReply.getData(0);
+            byte hvSwitch = extReply.getData(1);
 
-            updateState(CHANNEL_EXT_SWITCH, new StringType(String.valueOf(ext_switch)));
-            updateState(CHANNEL_HV_SWITCH, new StringType(String.valueOf(hv_switch)));
+            updateState(CHANNEL_EXT_SWITCH, new StringType(String.valueOf(extSwitch)));
+            updateState(CHANNEL_HV_SWITCH, new StringType(String.valueOf(hvSwitch)));
         }
     }
 }

@@ -1,3 +1,15 @@
+/**
+ * Copyright (c) 2010-2020 Contributors to the openHAB project
+ *
+ * See the NOTICE file(s) distributed with this work for additional
+ * information.
+ *
+ * This program and the accompanying materials are made available under the
+ * terms of the Eclipse Public License 2.0 which is available at
+ * http://www.eclipse.org/legal/epl-2.0
+ *
+ * SPDX-License-Identifier: EPL-2.0
+ */
 package org.openhab.binding.herzborg.internal;
 
 import java.io.IOException;
@@ -20,6 +32,12 @@ import org.eclipse.smarthome.io.transport.serial.UnsupportedCommOperationExcepti
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * The {@link SerialBusHandler} implements specific handling for Herzborg serial bus,
+ * connected directly via a serial port.
+ *
+ * @author Pavel Fedin - Initial contribution
+ */
 @NonNullByDefault
 public class SerialBusHandler extends BusHandler implements SerialPortEventListener {
     private final Logger logger = LoggerFactory.getLogger(SerialBusHandler.class);
@@ -121,6 +139,7 @@ public class SerialBusHandler extends BusHandler implements SerialPortEventListe
 
     @Override
     public void serialEvent(SerialPortEvent event) {
+        // This has been copied from SonyProjector binding
         try {
             logger.debug("RXTX library CPU load workaround, sleep forever");
             Thread.sleep(Long.MAX_VALUE);
