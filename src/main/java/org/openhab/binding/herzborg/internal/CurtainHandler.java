@@ -36,6 +36,7 @@ import org.eclipse.smarthome.core.thing.ThingStatusDetail;
 import org.eclipse.smarthome.core.thing.binding.BaseThingHandler;
 import org.eclipse.smarthome.core.thing.binding.BridgeHandler;
 import org.eclipse.smarthome.core.types.Command;
+import org.eclipse.smarthome.core.types.UnDefType;
 import org.openhab.binding.herzborg.internal.dto.HerzborgProtocol.ControlAddress;
 import org.openhab.binding.herzborg.internal.dto.HerzborgProtocol.DataAddress;
 import org.openhab.binding.herzborg.internal.dto.HerzborgProtocol.Function;
@@ -202,14 +203,9 @@ public class CurtainHandler extends BaseThingHandler {
             byte handStart = reply.getData(2);
             byte mode = reply.getData(3);
 
-            if (position > 100 || position < 0) {
-                // If calibration has been lost, position is reported as -1.
-                // Unfortinately DecimalType seems not to allow NaN, so we have to
-                // fall back to some valid value, we choose 0
-                position = 0;
-            }
-
-            updateState(CHANNEL_POSITION, new PercentType(position));
+            // If calibration has been lost, position is reported as -1.
+            updateState(CHANNEL_POSITION,
+                    (position > 100 || position < 0) ? UnDefType.UNDEF : new PercentType(position));
             updateState(CHANNEL_REVERSE, reverse != 0 ? OnOffType.ON : OnOffType.OFF);
             updateState(CHANNEL_HAND_START, handStart == 0 ? OnOffType.ON : OnOffType.OFF);
             updateState(CHANNEL_MODE, new StringType(String.valueOf(mode)));
