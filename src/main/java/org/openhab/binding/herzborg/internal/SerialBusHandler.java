@@ -139,11 +139,6 @@ public class SerialBusHandler extends BusHandler implements SerialPortEventListe
 
     @Override
     public void serialEvent(SerialPortEvent event) {
-        // This has been copied from SonyProjector binding
-        try {
-            logger.debug("RXTX library CPU load workaround, sleep forever");
-            Thread.sleep(Long.MAX_VALUE);
-        } catch (InterruptedException e) {
-        }
+        // Nothing to do here
     }
 }
