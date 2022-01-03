@@ -4,7 +4,7 @@
 	xmlns:thing="https://openhab.org/schemas/thing-description/v1.0.0"
 	xsi:schemaLocation="https://openhab.org/schemas/thing-description/v1.0.0 https://openhab.org/schemas/thing-description-1.0.0.xsd">
 	<bridge-type id="serial_bus">
-		<label>Herzborg serial bus</label>
+		<label>Herzborg Serial Bus</label>
 		<description>RS485 bus</description>
 		<config-description>
 			<parameter name="port" type="text" required="true">
@@ -20,15 +20,15 @@
 		<supported-bridge-type-refs>
 			<bridge-type-ref id="serial_bus"/>
 		</supported-bridge-type-refs>
-		<label>Herzborg curtain motor</label>
+		<label>Herzborg Curtain Motor</label>
 		<description>Curtain motor</description>
 		<channels>
 			<channel id="position" typeId="position"/>
 			<channel id="mode" typeId="mode"/>
 			<channel id="reverse" typeId="reverse"/>
-			<channel id="hand_start" typeId="hand_start"/>
-			<channel id="ext_switch" typeId="ext_switch"/>
-			<channel id="hv_switch" typeId="hv_switch"/>
+			<channel id="handStart" typeId="handStart"/>
+			<channel id="extSwitch" typeId="extSwitch"/>
+			<channel id="hwSwitch" typeId="hwSwitch"/>
 		</channels>
 
 		<config-description>
@@ -37,8 +37,8 @@
 				<description>Device address on the bus.</description>
 				<default>65278</default>
 			</parameter>
-			<parameter name="poll_interval" type="integer">
-				<label>Poll interval</label>
+			<parameter name="poll_interval" type="integer" unit="s">
+				<label>Poll Interval</label>
 				<description>Poll interval in seconds</description>
 				<default>1</default>
 			</parameter>
@@ -66,17 +66,17 @@
 	</channel-type>
 	<channel-type id="reverse" advanced="true">
 		<item-type>Switch</item-type>
-		<label>Reverse motor</label>
+		<label>Reverse Motor</label>
 		<description>Reverse default motor direction</description>
 	</channel-type>
-	<channel-type id="hand_start" advanced="true">
+	<channel-type id="handStart" advanced="true">
 		<item-type>Switch</item-type>
-		<label>Start by hand</label>
+		<label>Start By Hand</label>
 		<description>Enable or disable start by hand</description>
 	</channel-type>
-	<channel-type id="ext_switch" advanced="true">
+	<channel-type id="extSwitch" advanced="true">
 		<item-type>String</item-type>
-		<label>External switch</label>
+		<label>External Switch</label>
 		<description>External switch type</description>
 		<state>
 			<options>
@@ -87,9 +87,9 @@
 			</options>
 		</state>
 	</channel-type>
-	<channel-type id="hv_switch" advanced="true">
+	<channel-type id="hwSwitch" advanced="true">
 		<item-type>String</item-type>
-		<label>HV switch</label>
+		<label>HV Switch</label>
 		<description>High-voltage switch type (only for EV motor)</description>
 		<state>
 			<options>

@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2010-2020 Contributors to the openHAB project
+ * Copyright (c) 2010-2021 Contributors to the openHAB project
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information.
@@ -13,7 +13,7 @@
 package org.openhab.binding.herzborg.internal;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
-import org.eclipse.smarthome.core.thing.ThingTypeUID;
+import org.openhab.core.thing.ThingTypeUID;
 
 /**
  * The {@link HerzborgBindingConstants} class defines common constants, which are
@@ -34,7 +34,7 @@ public class HerzborgBindingConstants {
     public static final String CHANNEL_POSITION = "position";
     public static final String CHANNEL_MODE = "mode";
     public static final String CHANNEL_REVERSE = "reverse";
-    public static final String CHANNEL_HAND_START = "hand_start";
-    public static final String CHANNEL_EXT_SWITCH = "ext_switch";
-    public static final String CHANNEL_HV_SWITCH = "hv_switch";
+    public static final String CHANNEL_HAND_START = "handStart";
+    public static final String CHANNEL_EXT_SWITCH = "extSwitch";
+    public static final String CHANNEL_HV_SWITCH = "hvSwitch";
 }

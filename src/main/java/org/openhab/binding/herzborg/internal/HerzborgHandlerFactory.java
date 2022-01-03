@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2010-2020 Contributors to the openHAB project
+ * Copyright (c) 2010-2021 Contributors to the openHAB project
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information.
@@ -21,13 +21,14 @@ import java.util.stream.Stream;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
-import org.eclipse.smarthome.core.thing.Bridge;
-import org.eclipse.smarthome.core.thing.Thing;
-import org.eclipse.smarthome.core.thing.ThingTypeUID;
-import org.eclipse.smarthome.core.thing.binding.BaseThingHandlerFactory;
-import org.eclipse.smarthome.core.thing.binding.ThingHandler;
-import org.eclipse.smarthome.core.thing.binding.ThingHandlerFactory;
-import org.eclipse.smarthome.io.transport.serial.SerialPortManager;
+import org.openhab.core.io.transport.serial.SerialPortManager;
+import org.openhab.core.thing.Bridge;
+import org.openhab.core.thing.Thing;
+import org.openhab.core.thing.ThingTypeUID;
+import org.openhab.core.thing.binding.BaseThingHandlerFactory;
+import org.openhab.core.thing.binding.ThingHandler;
+import org.openhab.core.thing.binding.ThingHandlerFactory;
+import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
 
@@ -43,7 +44,12 @@ public class HerzborgHandlerFactory extends BaseThingHandlerFactory {
     private static final Set<ThingTypeUID> SUPPORTED_THING_TYPES_UIDS = Collections
             .unmodifiableSet(Stream.of(THING_TYPE_SERIAL_BUS, THING_TYPE_CURTAIN).collect(Collectors.toSet()));;
 
-    private @Nullable SerialPortManager serialPortManager;
+    private final SerialPortManager serialPortManager;
+
+    @Activate
+    public HerzborgHandlerFactory(final @Reference SerialPortManager serialPortManager) {
+        this.serialPortManager = serialPortManager;
+    }
 
     @Override
     public boolean supportsThingType(ThingTypeUID thingTypeUID) {
@@ -57,23 +63,9 @@ public class HerzborgHandlerFactory extends BaseThingHandlerFactory {
         if (THING_TYPE_CURTAIN.equals(thingTypeUID)) {
             return new CurtainHandler(thing);
         } else if (THING_TYPE_SERIAL_BUS.equals(thingTypeUID)) {
-            SerialPortManager serialManager = serialPortManager;
-
-            if (serialManager == null) {
-                throw new IllegalStateException("SerialPortManager is not present");
-            }
-            return new SerialBusHandler((Bridge) thing, serialManager);
+            return new SerialBusHandler((Bridge) thing, serialPortManager);
         }
 
         return null;
-    }
-
-    @Reference
-    protected void setSerialPortManager(final SerialPortManager serialPortManager) {
-        this.serialPortManager = serialPortManager;
-    }
-
-    protected void unsetSerialPortManager(final SerialPortManager serialPortManager) {
-        this.serialPortManager = null;
     }
 }

@@ -1,11 +1,11 @@
 # Herzborg Binding
 
-This binding supports smart curtain motors by Herzborg (http://www.herzborg.de/product.aspx#motor)
+This binding supports smart curtain motors by Herzborg (http://www.herzborg.com/pro_list.aspx?TypeID=1)
 
 ## Supported Things
 
-- RS485 Serial bus
-- Curtain motor.
+- `herzborg` A bridge thing that connects to a RS485 serial bus.
+- `curtain` A curtain motor thing that can be controlled via the `herzborg` bridge .
 
 The binding was developed and tested using DT300TV-1.2/14 type motor; others are expected to be compatible
 
@@ -32,25 +32,25 @@ Herzborg devices appear to use fixed 9600 8n1 communication parameters, so no ot
 
 ## Channels
 
-| channel     | type          | description                                   |
-|-------------|---------------|-----------------------------------------------|
-| position    | RollerShutter | Controls position of the curtain. Position reported back is in percents; 0 - fully closed; 100 - fully open |
-| mode        | String        | Reports current motor mode:                   |
-|             |               | 0 - Stop                                      |
-|             |               | 1 - Open                                      |
-|             |               | 2 - Close                                     |
-|             |               | 3 - Setting                                   |
-| reverse     | Switch        | Reverses direction when switched on           |
-| hand_start  | Switch        | Enable / disable hand start function          |
-| ext_switch  | String        | External (low-voltage) switch mode:           |
-|             |               | 1 - dual channel biased switch                |
-|             |               | 2 - dual channel rocker switch                |
-|             |               | 3 - DC246 electronic switch                   |
-|             |               | 4 - single button cyclic switch               |
-| hv_switch   | String        | Main (high-voltage) switch mode:              |
-|             |               | 0 - dual channel biased switch                |
-|             |               | 1 - hotel mode（power on while card in）        |
-|             |               | 2 - dual channel rocker switch                |
+| channel    | type          | description                                   |
+|------------|---------------|-----------------------------------------------|
+| position   | RollerShutter | Controls position of the curtain. Position reported back is in percents; 0 - fully closed; 100 - fully open |
+| mode       | String        | Reports current motor mode:                   |
+|            |               | 0 - Stop                                      |
+|            |               | 1 - Open                                      |
+|            |               | 2 - Close                                     |
+|            |               | 3 - Setting                                   |
+| reverse    | Switch        | Reverses direction when switched on           |
+| handStart  | Switch        | Enable / disable hand start function          |
+| extSwitch  | String        | External (low-voltage) switch mode:           |
+|            |               | 1 - dual channel biased switch                |
+|            |               | 2 - dual channel rocker switch                |
+|            |               | 3 - DC246 electronic switch                   |
+|            |               | 4 - single button cyclic switch               |
+| hvSwitch   | String        | Main (high-voltage) switch mode:              |
+|            |               | 0 - dual channel biased switch                |
+|            |               | 1 - hotel mode（power on while card in）        |
+|            |               | 2 - dual channel rocker switch                |
 
 ## Example
 
